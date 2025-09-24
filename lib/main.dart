@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';  // ← ADD THIS IMPORT
+import 'dart:convert';  // ← ADD THIS IMPORT for JSON encoding
 
 void main() {
   runApp(const MyApp());
@@ -51,6 +53,41 @@ class _MyHomePageState extends State<MyHomePage> {
       map[entry.key] = entry.value;
       return map;
     });
+  }
+
+  // ← ADD THIS METHOD: Load books when app starts
+  @override
+  void initState() {
+    super.initState();
+    _loadBooks();
+  }
+
+  // ← ADD THIS METHOD: Load books from storage
+  Future<void> _loadBooks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final booksJson = prefs.getString('library_books');
+      if (booksJson != null) {
+        final decoded = jsonDecode(booksJson);
+        setState(() {
+          _library.clear();
+          _library.addAll(Map<String, String>.from(decoded));
+        });
+      }
+    } catch (e) {
+      // Silent fail - if loading fails, just start with empty library
+    }
+  }
+
+  // ← ADD THIS METHOD: Save books to storage
+  Future<void> _saveBooks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final booksJson = jsonEncode(_library);
+      await prefs.setString('library_books', booksJson);
+    } catch (e) {
+      // Silent fail - if saving fails, data just won't persist
+    }
   }
 
   void _performSearch() {
@@ -159,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {  // ← CHANGED: Added async
                     final String newId = idController.text.trim();
                     final String newTitle = titleController.text.trim();
                     
@@ -180,6 +217,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       }
                       _library[newId] = newTitle;
                     });
+
+                    await _saveBooks();  // ← ADDED: Save after changes
                     
                     Navigator.of(context).pop();
                     _clearSearch();
@@ -252,10 +291,13 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {  // ← CHANGED: Added async
                 setState(() {
                   _library.remove(bookId);
                 });
+
+                await _saveBooks();  // ← ADDED: Save after deletion
+                
                 Navigator.of(context).pop();
                 _clearSearch();
               },
