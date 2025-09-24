@@ -219,7 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     });
 
                     Navigator.of(context).pop();
-                    await _saveBooks();  // ← ADDED: Save after changes
+                    _saveBooks();  // ← ADDED: Save after changes
                     _clearSearch();
                   },
                   child: Text(isEditing ? 'Update' : 'Add'),
@@ -294,11 +294,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   _library.remove(bookId);
                 });
-
-                
                 
                 Navigator.of(context).pop();
-                await _saveBooks();  // ← ADDED: Save after deletion
+                _saveBooks();  // ← ADDED: Save after deletion
                 _clearSearch();
               },
               style: ElevatedButton.styleFrom(
