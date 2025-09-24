@@ -227,7 +227,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     await _saveBooks();
                   }
                   
-                  await _saveBooks();
                   if (context.mounted) {
                     Navigator.of(dialogContext).pop();
                     _clearSearch();
