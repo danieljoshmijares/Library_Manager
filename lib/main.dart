@@ -107,13 +107,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Error'),
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('OK'),
             ),
           ],
@@ -123,119 +123,131 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showAddEditBookDialog({String? bookId}) {
-    bool isEditing = bookId != null;
-    final TextEditingController idController = TextEditingController(text: bookId ?? '');
-    final TextEditingController titleController = TextEditingController(
-        text: bookId != null ? _library[bookId] : '');
+  bool isEditing = bookId != null;
+  final TextEditingController idController = TextEditingController(text: bookId ?? '');
+  final TextEditingController titleController = TextEditingController(
+      text: bookId != null ? _library[bookId] : '');
 
-    // Initialize dialog text trackers
-    _dialogIdText = idController.text;
-    _dialogTitleText = titleController.text;
+  // Initialize dialog text trackers
+  _dialogIdText = idController.text;
+  _dialogTitleText = titleController.text;
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(isEditing ? 'Edit Book' : 'Add New Book'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: idController,
-                    decoration: InputDecoration(
-                      labelText: 'Book ID',
-                      suffixIcon: _dialogIdText.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                idController.clear();
-                                setDialogState(() {
-                                  _dialogIdText = '';
-                                });
-                              },
-                            )
-                          : null,
-                    ),
-                    enabled: !isEditing,
-                    onChanged: (value) {
-                      setDialogState(() {
-                        _dialogIdText = value;
-                      });
-                    },
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {   // ← renamed to dialogContext
+      return StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(isEditing ? 'Edit Book' : 'Add New Book'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: idController,
+                  decoration: InputDecoration(
+                    labelText: 'Book ID',
+                    suffixIcon: _dialogIdText.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              idController.clear();
+                              setDialogState(() {
+                                _dialogIdText = '';
+                              });
+                            },
+                          )
+                        : null,
                   ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      labelText: 'Book Title',
-                      suffixIcon: _dialogTitleText.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                titleController.clear();
-                                setDialogState(() {
-                                  _dialogTitleText = '';
-                                });
-                              },
-                            )
-                          : null,
-                    ),
-                    onChanged: (value) {
-                      setDialogState(() {
-                        _dialogTitleText = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {  // ← CHANGED: Added async
-                    final String newId = idController.text.trim();
-                    final String newTitle = titleController.text.trim();
-                    
-                    if (newId.isEmpty || newTitle.isEmpty) {
-                      _showErrorDialog('Please enter both ID and Title.');
-                      return;
-                    }
-
-                    // PREVENT DUPLICATE ID WHEN ADDING NEW BOOK
-                    if (!isEditing && _library.containsKey(newId)) {
-                      _showErrorDialog('Book ID "$newId" already exists. Please use a different ID.');
-                      return;
-                    }
-
-                    setState(() {
-                      if (isEditing && bookId != newId) {
-                        _library.remove(bookId);
-                      }
-                      _library[newId] = newTitle;
+                  enabled: !isEditing,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      _dialogIdText = value;
                     });
-
-                    Navigator.of(context).pop();
-                    _saveBooks();  // ← ADDED: Save after changes
-                    _clearSearch();
                   },
-                  child: Text(isEditing ? 'Update' : 'Add'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    labelText: 'Book Title',
+                    suffixIcon: _dialogTitleText.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              titleController.clear();
+                              setDialogState(() {
+                                _dialogTitleText = '';
+                              });
+                            },
+                          )
+                        : null,
+                  ),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      _dialogTitleText = value;
+                    });
+                  },
                 ),
               ],
-            );
-          },
-        );
-      },
-    );
-  }
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),  // ← use dialogContext here
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {  // ← CHANGED: Added async
+                  final String newId = idController.text.trim();
+                  final String newTitle = titleController.text.trim();
+                  
+                  if (newId.isEmpty || newTitle.isEmpty) {
+                    _showErrorDialog('Please enter both ID and Title.');
+                    return;
+                  }
+
+                  // PREVENT DUPLICATE ID WHEN ADDING NEW BOOK
+                  if (!isEditing && _library.containsKey(newId)) {
+                    _showErrorDialog('Book ID "$newId" already exists. Please use a different ID.');
+                    return;
+                  }
+
+                  // Save the changes first
+                  final Map<String, String> newLibrary = Map.from(_library);
+                  if (isEditing && bookId != newId) {
+                    newLibrary.remove(bookId);
+                  }
+                  newLibrary[newId] = newTitle;
+
+                  // Update state and save to storage
+                  if (mounted) {
+                    setState(() {
+                      _library.clear();
+                      _library.addAll(newLibrary);
+                    });
+                    await _saveBooks();
+                  }
+                  
+                  await _saveBooks();
+                  if (context.mounted) {
+                    Navigator.of(dialogContext).pop();
+                    _clearSearch();
+                  } // ← use dialogContext    
+                },
+                child: Text(isEditing ? 'Update' : 'Add'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
 
   void _showBookActionsDialog(String bookId) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Book Actions'),
           content: Text('Choose an action for "${_library[bookId]}" (ID: $bookId)'),
@@ -243,14 +255,14 @@ class _MyHomePageState extends State<MyHomePage> {
             // All actions now use consistent ElevatedButton styling
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 _showAddEditBookDialog(bookId: bookId);
               },
               child: const Text('Edit'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 _showDeleteConfirmationDialog(bookId);
               },
               style: ElevatedButton.styleFrom(
@@ -260,7 +272,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('Delete'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[300],
                 foregroundColor: Colors.black,
@@ -276,13 +288,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showDeleteConfirmationDialog(String bookId) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
           content: Text('Are you sure you want to delete "${_library[bookId]}"?'),
           actions: [
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(), // ← use dialogContext
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[300],
                 foregroundColor: Colors.black,
@@ -295,9 +307,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   _library.remove(bookId);
                 });
                 
-                Navigator.of(context).pop();
-                _saveBooks();  // ← ADDED: Save after deletion
-                _clearSearch();
+                await _saveBooks();
+                if (context.mounted) {
+                  Navigator.of(dialogContext).pop();
+                  _clearSearch();
+                } // ← ADDED: Save after deletion
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
