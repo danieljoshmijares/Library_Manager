@@ -102,17 +102,41 @@ class _MyHomePageState extends State<MyHomePage> {
   
   // Search functionality state
   String _searchQuery = '';
+  
+  // NEW: Sorting functionality state
+  String _sortBy = 'id'; // 'id', 'title'
+  bool _sortAscending = true;
+  
+  // NEW: Get displayed books with sorting applied
   Map<String, String> get _displayedBooks {
+    Map<String, String> books;
     if (_searchQuery.isEmpty) {
-      return _library;
+      books = Map.from(_library);
+    } else {
+      books = _library.entries.where((entry) {
+        return entry.key.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            entry.value.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).fold<Map<String, String>>({}, (map, entry) {
+        map[entry.key] = entry.value;
+        return map;
+      });
     }
-    return _library.entries.where((entry) {
-      return entry.key.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          entry.value.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).fold<Map<String, String>>({}, (map, entry) {
-      map[entry.key] = entry.value;
-      return map;
+    
+    // NEW: Apply sorting
+    final entries = books.entries.toList();
+    entries.sort((a, b) {
+      int result;
+      if (_sortBy == 'id') {
+        // Sort by ID (alphanumeric)
+        result = a.key.compareTo(b.key);
+      } else {
+        // Sort by Title (alphabetical)
+        result = a.value.compareTo(b.value);
+      }
+      return _sortAscending ? result : -result;
     });
+    
+    return Map.fromEntries(entries);
   }
 
   // ← ADD THIS METHOD: Load books when app starts
@@ -171,6 +195,28 @@ class _MyHomePageState extends State<MyHomePage> {
       _searchController.clear();
       _searchText = '';
     });
+  }
+
+  // NEW: Toggle sorting method
+  void _toggleSortBy(String newSortBy) {
+    setState(() {
+      if (_sortBy == newSortBy) {
+        // Toggle direction if same sort method
+        _sortAscending = !_sortAscending;
+      } else {
+        // Change sort method and reset to ascending
+        _sortBy = newSortBy;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  // NEW: Get sort icon based on current state
+  IconData _getSortIcon(String sortType) {
+    if (_sortBy != sortType) {
+      return Icons.sort;
+    }
+    return _sortAscending ? Icons.arrow_upward : Icons.arrow_downward;
   }
 
   void _showErrorDialog(String message) {
@@ -719,6 +765,87 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 8),
+
+            // NEW: Sorting controls - CLEAN VERSION
+            Card(
+              elevation: 0,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.sort, size: 18, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Sort by:',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Sort by ID button
+                    OutlinedButton.icon(
+                      onPressed: () => _toggleSortBy('id'),
+                      icon: Icon(
+                        _getSortIcon('id'),
+                        size: 16,
+                        color: _sortBy == 'id' ? Colors.blue : Colors.grey,
+                      ),
+                      label: Text(
+                        'ID',
+                        style: TextStyle(
+                          color: _sortBy == 'id' ? Colors.blue : Colors.grey,
+                          fontWeight: _sortBy == 'id' ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Sort by Title button
+                    OutlinedButton.icon(
+                      onPressed: () => _toggleSortBy('title'),
+                      icon: Icon(
+                        _getSortIcon('title'),
+                        size: 16,
+                        color: _sortBy == 'title' ? Colors.blue : Colors.grey,
+                      ),
+                      label: Text(
+                        'Title',
+                        style: TextStyle(
+                          color: _sortBy == 'title' ? Colors.blue : Colors.grey,
+                          fontWeight: _sortBy == 'title' ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    // Sort order indicator - CLEAN EXPLICIT LABEL
+                    Text(
+                      _sortAscending ? 'Ascending' : 'Descending',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 16),
 
