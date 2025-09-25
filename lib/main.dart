@@ -14,9 +14,69 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Library Transaction System',
+      // UI MODERNIZATION: Updated theme with blue color scheme
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue, // CHANGED: Purple to blue
+          brightness: Brightness.light,
+          // UI MODERNIZATION: Enhanced color palette
+          primary: Colors.blue, // CHANGED: Purple to blue
+          secondary: Colors.amber,
+          // FIX: Replace deprecated 'background' with 'surface'
+          surface: Colors.grey[50],
+        ),
         useMaterial3: true,
+        // UI MODERNIZATION: Better typography
+        typography: Typography.material2021(),
+        textTheme: TextTheme(
+          headlineMedium: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: Colors.blue.shade800, // CHANGED: Purple to blue
+          ),
+          titleLarge: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade800,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade700,
+          ),
+        ),
+        // UI MODERNIZATION: Enhanced card theme
+        // FIX: Change CardTheme to CardThemeData
+        cardTheme: CardThemeData(
+          elevation: 2,
+          // FIX: Replace deprecated withOpacity with color manipulation
+          shadowColor: Color.alphaBlend(
+            Colors.blue.withAlpha((0.1 * 255).round()), // CHANGED: Purple to blue
+            Colors.transparent
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.symmetric(vertical: 4),
+        ),
+        // UI MODERNIZATION: Better input decoration
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blue, width: 2), // CHANGED: Purple to blue
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
       ),
       home: const MyHomePage(title: 'Library Transaction System'),
     );
@@ -60,6 +120,21 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _loadBooks();
+    
+    // FIX: Add listener for real-time search
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.trim();
+        _searchText = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    // FIX: Dispose the controller properly
+    _searchController.dispose();
+    super.dispose();
   }
 
   // ← ADD THIS METHOD: Load books from storage
@@ -90,12 +165,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _performSearch() {
-    setState(() {
-      _searchQuery = _searchController.text.trim();
-    });
-  }
-
   void _clearSearch() {
     setState(() {
       _searchQuery = '';
@@ -108,15 +177,52 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('OK'),
+        // UI MODERNIZATION: Enhanced dialog styling
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox( // FIX: Consistent dialog size
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // UI MODERNIZATION: Better error icon
+                  Icon(Icons.error_outline, size: 48, color: Colors.amber[700]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.red[700],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // CHANGED: Purple to blue
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('OK'),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         );
       },
     );
@@ -137,104 +243,155 @@ class _MyHomePageState extends State<MyHomePage> {
     builder: (BuildContext dialogContext) {   // ← renamed to dialogContext
       return StatefulBuilder(
         builder: (context, setDialogState) {
-          return AlertDialog(
-            title: Text(isEditing ? 'Edit Book' : 'Add New Book'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: idController,
-                  decoration: InputDecoration(
-                    labelText: 'Book ID',
-                    suffixIcon: _dialogIdText.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              idController.clear();
-                              setDialogState(() {
-                                _dialogIdText = '';
-                              });
+          // UI MODERNIZATION: Modern dialog design
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: ConstrainedBox( // FIX: Consistent dialog size
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // UI MODERNIZATION: Better header with icon
+                    Row(
+                      children: [
+                        Icon(
+                          isEditing ? Icons.edit : Icons.add_circle,
+                          size: 28,
+                          color: Colors.blue, // CHANGED: Purple to blue
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          isEditing ? 'Edit Book' : 'Add New Book',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    
+                    TextField(
+                      controller: idController,
+                      decoration: InputDecoration(
+                        labelText: 'Book ID',
+                        prefixIcon: const Icon(Icons.numbers),
+                        suffixIcon: _dialogIdText.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  idController.clear();
+                                  setDialogState(() {
+                                    _dialogIdText = '';
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
+                      enabled: !isEditing,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          _dialogIdText = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: titleController,
+                      decoration: InputDecoration(
+                        labelText: 'Book Title',
+                        prefixIcon: const Icon(Icons.title),
+                        suffixIcon: _dialogTitleText.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  titleController.clear();
+                                  setDialogState(() {
+                                    _dialogTitleText = '';
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          _dialogTitleText = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // FIX: Consistent button layout - horizontal
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final String newId = idController.text.trim();
+                              final String newTitle = titleController.text.trim();
+                              
+                              if (newId.isEmpty || newTitle.isEmpty) {
+                                _showErrorDialog('Please enter both ID and Title.');
+                                return;
+                              }
+
+                              // PREVENT DUPLICATE ID WHEN ADDING NEW BOOK
+                              if (!isEditing && _library.containsKey(newId)) {
+                                _showErrorDialog('Book ID "$newId" already exists. Please use a different ID.');
+                                return;
+                              }
+
+                              // Save the changes first
+                              final Map<String, String> newLibrary = Map.from(_library);
+                              if (isEditing && bookId != newId) {
+                                newLibrary.remove(bookId);
+                              }
+                              newLibrary[newId] = newTitle;
+
+                              // Update state and save to storage
+                              if (mounted) {
+                                setState(() {
+                                  _library.clear();
+                                  _library.addAll(newLibrary);
+                                });
+                                await _saveBooks();
+                              }
+                              
+                              if (context.mounted) {
+                                Navigator.of(dialogContext).pop();
+                                _clearSearch();
+                              }
                             },
-                          )
-                        : null,
-                  ),
-                  enabled: !isEditing,
-                  onChanged: (value) {
-                    setDialogState(() {
-                      _dialogIdText = value;
-                    });
-                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Text(isEditing ? 'Update' : 'Add'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: titleController,
-                  decoration: InputDecoration(
-                    labelText: 'Book Title',
-                    suffixIcon: _dialogTitleText.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              titleController.clear();
-                              setDialogState(() {
-                                _dialogTitleText = '';
-                              });
-                            },
-                          )
-                        : null,
-                  ),
-                  onChanged: (value) {
-                    setDialogState(() {
-                      _dialogTitleText = value;
-                    });
-                  },
-                ),
-              ],
+              ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),  // ← use dialogContext here
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {  // ← CHANGED: Added async
-                  final String newId = idController.text.trim();
-                  final String newTitle = titleController.text.trim();
-                  
-                  if (newId.isEmpty || newTitle.isEmpty) {
-                    _showErrorDialog('Please enter both ID and Title.');
-                    return;
-                  }
-
-                  // PREVENT DUPLICATE ID WHEN ADDING NEW BOOK
-                  if (!isEditing && _library.containsKey(newId)) {
-                    _showErrorDialog('Book ID "$newId" already exists. Please use a different ID.');
-                    return;
-                  }
-
-                  // Save the changes first
-                  final Map<String, String> newLibrary = Map.from(_library);
-                  if (isEditing && bookId != newId) {
-                    newLibrary.remove(bookId);
-                  }
-                  newLibrary[newId] = newTitle;
-
-                  // Update state and save to storage
-                  if (mounted) {
-                    setState(() {
-                      _library.clear();
-                      _library.addAll(newLibrary);
-                    });
-                    await _saveBooks();
-                  }
-                  
-                  if (context.mounted) {
-                    Navigator.of(dialogContext).pop();
-                    _clearSearch();
-                  } // ← use dialogContext    
-                },
-                child: Text(isEditing ? 'Update' : 'Add'),
-              ),
-            ],
           );
         },
       );
@@ -247,38 +404,99 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Book Actions'),
-          content: Text('Choose an action for "${_library[bookId]}" (ID: $bookId)'),
-          actions: [
-            // All actions now use consistent ElevatedButton styling
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _showAddEditBookDialog(bookId: bookId);
-              },
-              child: const Text('Edit'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _showDeleteConfirmationDialog(bookId);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+        // UI MODERNIZATION: Enhanced actions dialog
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox( // FIX: Consistent dialog size
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // UI MODERNIZATION: Better header
+                  Text(
+                    'Book Actions',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '"${_library[bookId]}"',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  Text(
+                    'ID: $bookId',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // FIX: Consistent vertical button layout
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(dialogContext).pop();
+                            _showAddEditBookDialog(bookId: bookId);
+                          },
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Edit Book'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[600],
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(dialogContext).pop();
+                            _showDeleteConfirmationDialog(bookId);
+                          },
+                          icon: const Icon(Icons.delete),
+                          label: const Text('Delete Book'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red[600],
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              child: const Text('Delete'),
             ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[300],
-                foregroundColor: Colors.black,
-              ),
-              child: const Text('Cancel'),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -288,37 +506,77 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Confirm Delete'),
-          content: Text('Are you sure you want to delete "${_library[bookId]}"?'),
-          actions: [
-            ElevatedButton(
-              onPressed: () => Navigator.of(dialogContext).pop(), // ← use dialogContext
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[300],
-                foregroundColor: Colors.black,
+        // UI MODERNIZATION: Enhanced delete confirmation
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox( // FIX: Consistent dialog size
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.warning_amber, size: 48, color: Colors.orange[700]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Confirm Delete',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: Colors.red[700],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Are you sure you want to delete "${_library[bookId]}"?',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 24),
+                  // FIX: Consistent horizontal button layout
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            setState(() {
+                              _library.remove(bookId);
+                            });
+                            
+                            await _saveBooks();
+                            if (context.mounted) {
+                              Navigator.of(dialogContext).pop();
+                              _clearSearch();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red[600],
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text('Delete'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              child: const Text('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () async {  // ← CHANGED: Added async
-                setState(() {
-                  _library.remove(bookId);
-                });
-                
-                await _saveBooks();
-                if (context.mounted) {
-                  Navigator.of(dialogContext).pop();
-                  _clearSearch();
-                } // ← ADDED: Save after deletion
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Delete'),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -327,79 +585,144 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // UI MODERNIZATION: Enhanced AppBar
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        backgroundColor: Colors.blue, // CHANGED: Purple to blue
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
+        // UI MODERNIZATION: Better AppBar styling
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(16),
+          ),
+        ),
       ),
-      body: Padding(
+      body: Container(
+        // UI MODERNIZATION: Background color
+        color: Colors.grey[50],
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // --- SEARCH SECTION ---
-            const Text(
-              'Search Books:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            // UI MODERNIZATION: Enhanced search section
+            Card(
+              elevation: 0,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.search, color: Colors.blue, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Search Books',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.blue.shade800,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter book ID or title...',
+                        suffixIcon: _searchText.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.clear, color: Colors.grey[600]),
+                                onPressed: _clearSearch,
+                              )
+                            : null,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchText = value;
+                          _searchQuery = value.trim();
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
+
+            // FIX: Add Book button in same row as Books counter
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      labelText: 'Search by Book ID or Title',
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
+                  child: Card(
+                    elevation: 0,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
                         children: [
-                          // Clear button appears when typing, on the LEFT
-                          if (_searchText.isNotEmpty)
-                            IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: _clearSearch,
-                              padding: const EdgeInsets.only(right: 4),
+                          Icon(
+                            Icons.menu_book,
+                            color: Colors.blue,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Books in Library:',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _searchQuery.isNotEmpty ? Colors.blue[50] : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          // Search icon button (always visible) on the RIGHT
-                          IconButton(
-                            icon: const Icon(Icons.search),
-                            onPressed: _performSearch,
-                            padding: const EdgeInsets.only(left: 4),
+                            child: Text(
+                              '${_displayedBooks.length} book${_displayedBooks.length != 1 ? 's' : ''}${_searchQuery.isNotEmpty ? ' found' : ''}',
+                              style: TextStyle(
+                                color: _searchQuery.isNotEmpty ? Colors.blue[700] : Colors.grey[700],
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchText = value;
-                      });
-                    },
-                    onSubmitted: (_) => _performSearch(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // FIX: Add Book button placed here in the same row
+                Card(
+                  elevation: 2,
+                  color: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    onPressed: () => _showAddEditBookDialog(),
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    tooltip: 'Add Book',
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // --- BOOKS COUNTER ---
-            Row(
-              children: [
-                const Text(
-                  'Books in Library:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  '(${_displayedBooks.length} books${_searchQuery.isNotEmpty ? ' found' : ''})',
-                  style: TextStyle(
-                    color: _searchQuery.isNotEmpty ? Colors.blue : Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // --- BOOKS LIST ---
+            // UI MODERNIZATION: Enhanced books list
             Expanded(
               child: _displayedBooks.isEmpty
                   ? Center(
@@ -408,16 +731,28 @@ class _MyHomePageState extends State<MyHomePage> {
                         children: [
                           Icon(
                             Icons.menu_book,
-                            size: 64,
+                            size: 80,
                             color: Colors.grey[300],
                           ),
                           const SizedBox(height: 16),
                           Text(
                             _searchQuery.isEmpty
-                                ? 'No books in the library yet.\nStart by adding a book!'
-                                : 'No books found for "$_searchQuery"',
+                                ? 'No books in the library yet'
+                                : 'No books found',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _searchQuery.isEmpty
+                                ? 'Tap the + button to add your first book!'
+                                : 'Try a different search term',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 16, color: Colors.grey),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                       ),
@@ -430,20 +765,48 @@ class _MyHomePageState extends State<MyHomePage> {
                         
                         return Card(
                           child: ListTile(
-                            leading: const Icon(Icons.book),
-                            title: Text(title),
-                            subtitle: Text('ID: $bookId'),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.blue[50],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.book, color: Colors.blue),
+                            ),
+                            title: Text(
+                              title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'ID: $bookId',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 14,
+                              ),
+                            ),
                             trailing: IconButton(
-                              icon: const Icon(Icons.more_vert),
+                              icon: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.more_vert, size: 18),
+                              ),
                               onPressed: () => _showBookActionsDialog(bookId),
                             ),
                             onTap: () {
                               setState(() {
                                 _searchController.text = bookId;
                                 _searchText = bookId;
-                                _performSearch();
+                                _searchQuery = bookId;
                               });
                             },
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ),
                         );
                       },
@@ -451,11 +814,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEditBookDialog(),
-        tooltip: 'Add Book',
-        child: const Icon(Icons.add),
       ),
     );
   }
