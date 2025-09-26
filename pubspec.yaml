@@ -1,5 +1,5 @@
 name: library_transaction_system
-description: "A new Flutter project."
+description: "A modern Flutter app for managing library book transactions with CRUD operations and local data persistence."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

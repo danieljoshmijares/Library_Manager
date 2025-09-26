@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Library Transaction System',
+      title: 'Library Manager',
       // UI MODERNIZATION: Updated theme with blue color scheme
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

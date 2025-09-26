@@ -5,30 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Flutter: Attach to Device",
-            "type": "dart",
-            "request": "attach"
-        },
-        {
-            "name": "Flutter",
+            "name": "Flutter (Windows Debug)",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart", 
             "deviceId": "windows"
         },
         {
-            "name": "Flutter (Profile Mode)",
+            "name": "Flutter (Profile Mode - Chrome)",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
-            "flutterMode": "profile"
+            "flutterMode": "profile",
+            "deviceId": "chrome"
         },
         {
-            "name": "Flutter (Release Mode)",
+            "name": "Flutter (Release Mode - Poco X5 5G)",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
-            "flutterMode": "release"
+            "flutterMode": "release",
+            "deviceId": "6b2782ad0000"
         },
         {
             "name": "Flutter: Run all Tests",

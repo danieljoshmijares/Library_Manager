@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="library_transaction_system"
+        android:label="Library Manager"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
