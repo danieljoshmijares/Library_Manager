@@ -1,6 +1,8 @@
 # library_transaction_system
 
-A new Flutter project.
+A modern Flutter app for managing library book transactions with CRUD operations and local data persistence.
+Deployable link: https://library-manager-123.web.app
+
 
 ## Getting Started
 
