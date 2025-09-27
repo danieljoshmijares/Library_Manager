@@ -1,6 +1,6 @@
 {
-    "name": "library_transaction_system",
-    "short_name": "library_transaction_system",
+    "name": "Libary Manager",
+    "short_name": "LibraryMgr",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
